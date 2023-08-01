@@ -1,0 +1,41 @@
+import csv
+import requests
+from bs4 import BeautifulSoup
+
+def extract_bird_species(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        bird_species_data = response.json().get('recordings')
+        # soup = BeautifulSoup(response.content, 'html.parser')
+        # bird_species_data = []
+
+        # for row in soup.find_all('div', class_='taxon'):
+        #     species = row.find('span', class_='species').text.strip()
+        #     family = row.find('span', class_='family').text.strip()
+
+        #     bird_species_data.append({
+        #         'Species': species,
+        #         'Family': family
+        #     })
+
+        return bird_species_data
+    else:
+        print("Failed to fetch the webpage.")
+        return None
+
+def save_to_csv(data, filename):
+    if data:
+        with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+            fieldnames = list(data[0].keys())
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(data)
+        print(f"Data saved to {filename} successfully.")
+    else:
+        print("No data to save.")
+
+if __name__ == "__main__":
+    url = "https://xeno-canto.org/api/2/recordings?query=cnt:uganda"
+    bird_species_data = extract_bird_species(url)
+    if bird_species_data:
+        save_to_csv(bird_species_data, "bird_species.csv")
